@@ -1,0 +1,33 @@
+<?php
+function domain_files_menu(){
+  $items['domain/files/download'] = array(
+    'title' => 'File download',
+    'page callback' => 'file_download',
+    'page arguments' => array('domains'),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+function domain_files_stream_wrappers(){
+  return array(
+    'domains' => array(
+      'name' => t('Domains restricted files'),
+      'class' => 'DomainsStreamWrapper',
+      'description' => t('Domains restricted files'),
+      'type' => STREAM_WRAPPERS_LOCAL_NORMAL,
+    ),
+  );
+}
+class DomainsStreamWrapper extends DrupalPrivateStreamWrapper{
+  public function getDirectoryPath() {
+    $domain = domain_get_domain();
+    
+    $main_domain = substr($domain['subdomain'], strpos($domain['subdomain'], '.')+1);
+    return 'sites/'.$main_domain.'/files/'.$domain['subdomain'];
+  }
+  public function getExternalUrl() {
+    $path = str_replace('\\', '/', $this->getTarget());
+    return url('domain/files/download/' . $path, array('absolute' => TRUE));
+  }
+}
